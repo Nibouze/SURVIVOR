@@ -1,5 +1,4 @@
 class Personnage:
-    #caca
     def __init__(self, nom, vie, armure, distance_attaque, vitesse_recup, vitesse_deplacement, x, y, argent=0, xp=0):
         self.nom = nom
         self.vie = vie
