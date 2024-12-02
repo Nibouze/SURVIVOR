@@ -32,6 +32,7 @@ class Menu:
                 text_rect = text.get_rect(center=(LARGEUR // 2, 200 + i * 60))
 
             self.screen.blit(text, text_rect)
+            ###cccghg
 
 
     def event(self, event):
