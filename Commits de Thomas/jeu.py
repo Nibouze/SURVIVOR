@@ -5,6 +5,8 @@ import pygame
 import csv
 import os
 import random
+import time
+import subprocess
 from classes import Personnage, Ennemi, TankEnnemi, CombattantEnnemi, RangeEnnemi, Assassin, Tank, Combattant, Sniper
 
 #==================================================
@@ -18,7 +20,9 @@ ECHELLE_JOUEUR = 2
 VITESSE_MARCHE = 5
 VITESSE_COURSE = 10
 NOIR = (0, 0, 0)
-
+DEGATS_JOUEUR = 20  # Définition des dégâts du joueur
+ATTAQUE_RANGE = 100  # Portée de l'attaque du joueur
+DUREE_ANIMATION_ATTAQUE = 25
 #==================================================
 #----------------PYGAME INITIALISATION-------------
 #==================================================
@@ -55,6 +59,9 @@ class Joueur(Personnage, pygame.sprite.Sprite):
         self.type_attaque = None
         self.direction = "bas"
         self.rect = pygame.Rect(pos_x, pos_y, self.largeur_frame * self.facteur_echelle, self.hauteur_frame * self.facteur_echelle)
+        self.degats_affiches = []
+        self.zone_attaque = None  # Zone d'attaque visuelle
+        self.timer_attaque = 0  # Timer pour afficher l'animation de l'attaque
 
     def obtenir_frame(self, frame, direction, en_course, en_attaque=False):
         # Définition des directions pour les animations
@@ -101,11 +108,34 @@ class Joueur(Personnage, pygame.sprite.Sprite):
             self.en_mouvement = False
             self.sprite_actuel = 0
 
-    def commencer_attaque(self, type_attaque):
+    def commencer_attaque(self, type_attaque, ennemis):
         # Début de l'attaque
         self.en_attaque = True
         self.type_attaque = type_attaque
         self.sprite_actuel = 0
+        self.timer_attaque = DUREE_ANIMATION_ATTAQUE
+
+        # Déterminer la zone d'attaque comme un cercle autour du joueur
+        centre_x = self.rect.centerx
+        centre_y = self.rect.centery
+        self.zone_attaque = pygame.Rect(centre_x - ATTAQUE_RANGE, centre_y - ATTAQUE_RANGE, ATTAQUE_RANGE * 2, ATTAQUE_RANGE * 2)
+
+        # Vérifier si l'attaque touche un ennemi
+        for ennemi in ennemis:
+            if self.zone_attaque.colliderect(ennemi.rect):
+                ennemi.vie -= DEGATS_JOUEUR
+                print(f"{ennemi.type_ennemi} touché ! Vie restante : {ennemi.vie}")
+                self.degats_affiches.append([ennemi.rect.x, ennemi.rect.y, str(DEGATS_JOUEUR), 60])
+                if ennemi.vie <= 0:
+                    ennemis.remove(ennemi)
+                    print(f"{ennemi.type_ennemi} éliminé !")
+
+    def afficher_zone_attaque(self, surface):
+        if self.timer_attaque > 0:
+            centre_x = self.rect.centerx
+            centre_y = self.rect.centery
+            pygame.draw.circle(surface, (255, 0, 0), (centre_x, centre_y), ATTAQUE_RANGE, 2)
+            self.timer_attaque -= 1
 
     def mettre_a_jour(self):
         # Mise à jour de l'animation
@@ -127,6 +157,8 @@ class Joueur(Personnage, pygame.sprite.Sprite):
             self.rect.height = self.image.get_height()  # Utiliser height au lieu de hauteur
         else:
             self.image = self.obtenir_frame(0, self.direction, False)
+
+
 class Orc(Ennemi, pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         Ennemi.__init__(self, type_ennemi="Orc", vie=100, armure=50, degats=20, distance_attaque=1, vitesse_deplacement=VITESSE_MARCHE, x=pos_x, y=pos_y)
@@ -196,6 +228,7 @@ class Orc(Ennemi, pygame.sprite.Sprite):
         if self.sprite_actuel >= 8:
             self.sprite_actuel = 0
         self.image = self.obtenir_frame(int(self.sprite_actuel), self.direction, en_course=True)
+
 
 #==================================================
 #--------------------FONCTIONS---------------------
@@ -289,20 +322,42 @@ colonnes = len(carte[0])
 largeur_matrice = colonnes * TAILLE_TUILE
 hauteur_matrice = lignes * TAILLE_TUILE
 
-# Génération des Orcs
-orcs = []
-for _ in range(5):
-    while True:
-        spawn_x = random.randint(0, colonnes - 1) * TAILLE_TUILE
-        spawn_y = random.randint(0, lignes - 1) * TAILLE_TUILE
+def generer_orcs(nombre_orcs, joueur):
+    """Génère des orcs sur des positions valides de la carte."""
+    orcs = []
+    for _ in range(nombre_orcs):
+        while True:
+            spawn_x = random.randint(0, colonnes - 1) * TAILLE_TUILE
+            spawn_y = random.randint(0, lignes - 1) * TAILLE_TUILE
 
-        # Vérification que l'Orc spawn sur une case "38"
-        if carte[spawn_y // TAILLE_TUILE][spawn_x // TAILLE_TUILE] == '38':
-            orcs.append(Orc(spawn_x, spawn_y))
-            break  # Sortir de la boucle quand une position valide est trouvée
+            # Vérifier si la tuile est une zone de déplacement valide
+            ligne = spawn_y // TAILLE_TUILE
+            colonne = spawn_x // TAILLE_TUILE
+            if peut_se_deplacer_vers(carte[ligne][colonne]):
+                orc = Orc(spawn_x, spawn_y)
+                orcs.append(orc)
+                print(f"Orc généré à ({spawn_x}, {spawn_y})")
+                break  # Sortir de la boucle une fois qu'un emplacement valide est trouvé
+    return orcs
+
+# Fonction d'affichage des barres de vie
+def afficher_barre_vie(surface, x, y, largeur, hauteur, vie_actuelle, vie_max, couleur_fond, couleur_barre):
+    pygame.draw.rect(surface, couleur_fond, (x, y, largeur, hauteur))
+    largeur_barre = int((vie_actuelle / vie_max) * largeur)
+    pygame.draw.rect(surface, couleur_barre, (x, y, largeur_barre, hauteur))
 
 position_joueur_x = LARGEUR_FENETRE // 2
 position_joueur_y = HAUTEUR_FENETRE // 2
+
+def afficher_game_over(fenetre):
+    fenetre.fill((0, 0, 0))
+    font = pygame.font.Font(None, 100)
+    texte = font.render("GAME OVER", True, (255, 0, 0))
+    fenetre.blit(texte, ((LARGEUR_FENETRE - texte.get_width()) // 2, (HAUTEUR_FENETRE - texte.get_height()) // 2))
+    pygame.display.flip()
+    time.sleep(3)
+    pygame.quit()
+    subprocess.run(["python", "interface.py"])
 
 def peut_se_deplacer_vers(caractere_tuile):
     """ Vérifie si le mouvement est possible """
@@ -312,7 +367,6 @@ def peut_se_deplacer_vers(caractere_tuile):
 def lancer_jeu(classe):
     en_cours = True
     horloge = pygame.time.Clock()
-
     fenetre = pygame.display.set_mode((LARGEUR_FENETRE, HAUTEUR_FENETRE), pygame.RESIZABLE)
 
     surface_fondu = pygame.Surface((LARGEUR_FENETRE, HAUTEUR_FENETRE))
@@ -328,7 +382,7 @@ def lancer_jeu(classe):
     elif classe == "SNIPER":
         joueur = Joueur("Joueur", 120, 60, 5, 1.8, 1, largeur_matrice // 2, hauteur_matrice // 2)
 
-    orcs = [Orc(random.randint(0, largeur_matrice - 1) * TAILLE_TUILE, random.randint(0, hauteur_matrice - 1) * TAILLE_TUILE) for _ in range(10)]
+    orcs = generer_orcs(10, joueur)
 
     while en_cours:
         for evenement in pygame.event.get():
@@ -339,7 +393,7 @@ def lancer_jeu(classe):
                     joueur.arreter_mouvement()
             elif evenement.type == pygame.KEYDOWN:
                 if evenement.key == pygame.K_1:
-                    joueur.commencer_attaque(3)
+                    joueur.commencer_attaque(3,orcs)
 
         touches = pygame.key.get_pressed()
 
@@ -400,10 +454,27 @@ def lancer_jeu(classe):
         joueur.mettre_a_jour()
         fenetre.blit(joueur.image, (position_joueur_x - joueur.rect.width // 2, position_joueur_y - joueur.rect.height // 2))
 
+        # Correction de l'affichage dans la boucle du jeu
         for orc in orcs:
             orc.mettre_a_jour(joueur)
-            fenetre.blit(orc.image, (orc.rect.x - decalage_camera_x, orc.rect.y - decalage_camera_y))
+            x = orc.rect.x - decalage_camera_x
+            y = orc.rect.y - decalage_camera_y
+            if 0 <= x < LARGEUR_FENETRE and 0 <= y < HAUTEUR_FENETRE:
+                fenetre.blit(orc.image, (x, y))
+                afficher_barre_vie(fenetre, x, y - 10, 40, 5, orc.vie, 100, (255, 0, 0), (0, 255, 0))
 
+                # Gestion des collisions
+                if joueur.rect.colliderect(orc.rect):
+                    joueur.vie -= 0.1  # Réduction de la vie du joueur en cas de collision
+
+        #affiche les dégats de l'attaque
+        joueur.afficher_zone_attaque(fenetre)
+        # Affichage de la barre de vie du joueur
+        afficher_barre_vie(fenetre, 20, 20, 200, 20, joueur.vie, 100, (255, 0, 0), (0, 255, 0))
+
+        if joueur.vie <= 0:
+            afficher_game_over(fenetre)
+            return
         if alpha_fondu > 0:
             surface_fondu.set_alpha(alpha_fondu)
             fenetre.blit(surface_fondu, (0, 0))
