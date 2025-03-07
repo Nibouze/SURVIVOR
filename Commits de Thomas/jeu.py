@@ -115,14 +115,15 @@ class Joueur(Personnage, pygame.sprite.Sprite):
         self.sprite_actuel = 0
         self.timer_attaque = DUREE_ANIMATION_ATTAQUE
 
-        # Déterminer la zone d'attaque comme un cercle autour du joueur
-        centre_x = self.rect.centerx
-        centre_y = self.rect.centery
-        self.zone_attaque = pygame.Rect(centre_x - ATTAQUE_RANGE, centre_y - ATTAQUE_RANGE, ATTAQUE_RANGE * 2, ATTAQUE_RANGE * 2)
+        # Définir une attaque en cercle autour du joueur en utilisant la position correcte
+        centre_x = self.rect.x + self.rect.width // 2
+        centre_y = self.rect.y + self.rect.height // 2
+        self.zone_attaque = (centre_x, centre_y, ATTAQUE_RANGE)  # Représentation circulaire
 
         # Vérifier si l'attaque touche un ennemi
         for ennemi in ennemis:
-            if self.zone_attaque.colliderect(ennemi.rect):
+            distance = ((ennemi.rect.x + ennemi.rect.width // 2 - centre_x) ** 2 + (ennemi.rect.y + ennemi.rect.height // 2 - centre_y) ** 2) ** 0.5
+            if distance <= ATTAQUE_RANGE:
                 ennemi.vie -= DEGATS_JOUEUR
                 print(f"{ennemi.type_ennemi} touché ! Vie restante : {ennemi.vie}")
                 self.degats_affiches.append([ennemi.rect.x, ennemi.rect.y, str(DEGATS_JOUEUR), 60])
@@ -130,12 +131,15 @@ class Joueur(Personnage, pygame.sprite.Sprite):
                     ennemis.remove(ennemi)
                     print(f"{ennemi.type_ennemi} éliminé !")
 
-    def afficher_zone_attaque(self, surface):
-        if self.timer_attaque > 0:
-            centre_x = self.rect.centerx
-            centre_y = self.rect.centery
+
+
+    def afficher_zone_attaque(self, surface, decalage_camera_x, decalage_camera_y):
+        if self.timer_attaque > 0 and self.zone_attaque:
+            centre_x = self.rect.x + self.rect.width // 2 - decalage_camera_x
+            centre_y = self.rect.y + self.rect.height // 2 - decalage_camera_y
             pygame.draw.circle(surface, (255, 0, 0), (centre_x, centre_y), ATTAQUE_RANGE, 2)
             self.timer_attaque -= 1
+
 
     def mettre_a_jour(self):
         # Mise à jour de l'animation
@@ -437,8 +441,8 @@ def lancer_jeu(classe):
         if 0 <= nouvelle_colonne < colonnes and peut_se_deplacer_vers(carte[joueur.rect.y // TAILLE_TUILE][nouvelle_colonne]):
             joueur.rect.x += deplacement_x
 
-        decalage_camera_x = joueur.rect.x - position_joueur_x
-        decalage_camera_y = joueur.rect.y - position_joueur_y
+        decalage_camera_x = joueur.rect.x - position_joueur_x + 60
+        decalage_camera_y = joueur.rect.y - position_joueur_y +60
 
         fenetre.fill(NOIR)
 
@@ -468,7 +472,7 @@ def lancer_jeu(classe):
                     joueur.vie -= 0.1  # Réduction de la vie du joueur en cas de collision
 
         #affiche les dégats de l'attaque
-        joueur.afficher_zone_attaque(fenetre)
+        joueur.afficher_zone_attaque(fenetre, decalage_camera_x, decalage_camera_y)
         # Affichage de la barre de vie du joueur
         afficher_barre_vie(fenetre, 20, 20, 200, 20, joueur.vie, 100, (255, 0, 0), (0, 255, 0))
 
