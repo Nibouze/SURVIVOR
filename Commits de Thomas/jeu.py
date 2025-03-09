@@ -20,7 +20,6 @@ ECHELLE_JOUEUR = 2
 VITESSE_MARCHE = 5
 VITESSE_COURSE = 10
 NOIR = (0, 0, 0)
-DEGATS_JOUEUR = 20  # Définition des dégâts du joueur
 ATTAQUE_RANGE = 100  # Portée de l'attaque du joueur
 DUREE_ANIMATION_ATTAQUE = 25
 #==================================================
@@ -38,17 +37,45 @@ pygame.display.set_caption("Survivor")
 #==================================================
 
 class Joueur(Personnage, pygame.sprite.Sprite):
-    def __init__(self, nom, vie, armure, distance_attaque, vitesse_recup, vitesse_deplacement, pos_x, pos_y):
-        Personnage.__init__(self, nom, vie, armure, distance_attaque, vitesse_recup, vitesse_deplacement, pos_x, pos_y)
-        pygame.sprite.Sprite.__init__(self)
-        # Chargement des spritesheets pour les différentes animations
-        self.spritesheet_course = pygame.image.load('sprites/player/run.png')
-        self.spritesheet_marche = pygame.image.load('sprites/player/walk.png')
-        self.spritesheet_attaque = pygame.image.load('sprites/player/attaque3.png')
-        self.spritesheet_mort = pygame.image.load('sprites/player/hurt.png')
-        self.spritesheet_attente = pygame.image.load('sprites/player/waiting.png')
+    def __init__(self, classe, pos_x, pos_y, argent=0, xp=0):
+        self.classe = classe  # Stocker la classe choisie
 
-        # Dimensions des frames
+        # Définition des stats et du dossier des sprites selon la classe
+        stats = {
+            "ASSASSIN": {"vie": 100, "distance_attaque": 3, "vitesse_recup": 1.5, "vitesse_deplacement": 2, "degats": 100, "sprite_folder": "sprites/assassin/"},
+            "TANK": {"vie": 200, "distance_attaque": 1, "vitesse_recup": 1, "vitesse_deplacement": 0.8, "degats": 50, "sprite_folder": "sprites/tank/"},
+            "COMBATTANT": {"vie": 150, "distance_attaque": 2, "vitesse_recup": 1.2, "vitesse_deplacement": 1.5, "degats": 75, "sprite_folder": "sprites/combattant/"},
+            "SNIPER": {"vie": 120, "distance_attaque": 5, "vitesse_recup": 1.8, "vitesse_deplacement": 1, "degats": 200, "sprite_folder": "sprites/sniper/"}
+        }
+
+        if classe not in stats:
+            raise ValueError("Classe inconnue")
+
+        # Assignation des valeurs selon la classe
+        self.vie = stats[classe]["vie"]
+        self.distance_attaque = stats[classe]["distance_attaque"]
+        self.vitesse_recup = stats[classe]["vitesse_recup"]
+        self.vitesse_deplacement = stats[classe]["vitesse_deplacement"]
+        self.degats = stats[classe]["degats"]
+        self.xp = 0
+        self.gold = 0
+        self.niveau = 1
+        self.xp_prochain_niveau = 100  # XP nécessaire pour passer au niveau suivant
+        # self.sprite_folder = stats[classe]["sprite_folder"] a decommenter quand sprite rajoutée au fichier et enlevr ligne du dessous.
+        self.sprite_folder = 'sprites/player/'
+
+        # Initialisation du parent avec les stats définies
+        super().__init__(classe, self.vie, self.distance_attaque, self.vitesse_recup, self.vitesse_deplacement, pos_x, pos_y, argent, xp)
+        pygame.sprite.Sprite.__init__(self)
+
+        # Chargement des sprites spécifiques à la classe
+        self.spritesheet_course = pygame.image.load(self.sprite_folder + 'run.png')
+        self.spritesheet_marche = pygame.image.load(self.sprite_folder + 'walk.png')
+        self.spritesheet_attaque = pygame.image.load(self.sprite_folder + 'attack.png')
+        self.spritesheet_mort = pygame.image.load(self.sprite_folder + 'hurt.png')
+        self.spritesheet_attente = pygame.image.load(self.sprite_folder + 'waiting.png')
+
+        # Définition des dimensions et autres attributs
         self.largeur_frame = self.spritesheet_course.get_width() // 8
         self.hauteur_frame = self.spritesheet_course.get_height() // 4
         self.facteur_echelle = ECHELLE_JOUEUR
@@ -60,8 +87,9 @@ class Joueur(Personnage, pygame.sprite.Sprite):
         self.direction = "bas"
         self.rect = pygame.Rect(pos_x, pos_y, self.largeur_frame * self.facteur_echelle, self.hauteur_frame * self.facteur_echelle)
         self.degats_affiches = []
-        self.zone_attaque = None  # Zone d'attaque visuelle
-        self.timer_attaque = 0  # Timer pour afficher l'animation de l'attaque
+        self.zone_attaque = None
+        self.timer_attaque = 0
+
 
     def obtenir_frame(self, frame, direction, en_course, en_attaque=False):
         # Définition des directions pour les animations
@@ -124,12 +152,15 @@ class Joueur(Personnage, pygame.sprite.Sprite):
         for ennemi in ennemis:
             distance = ((ennemi.rect.x + ennemi.rect.width // 2 - centre_x) ** 2 + (ennemi.rect.y + ennemi.rect.height // 2 - centre_y) ** 2) ** 0.5
             if distance <= ATTAQUE_RANGE:
-                ennemi.vie -= DEGATS_JOUEUR
-                print(f"{ennemi.type_ennemi} touché ! Vie restante : {ennemi.vie}")
-                self.degats_affiches.append([ennemi.rect.x, ennemi.rect.y, str(DEGATS_JOUEUR), 60])
+                ennemi.vie -= self.degats
+                # print(f"{ennemi.type_ennemi} touché ! Vie restante : {ennemi.vie}")
+                self.degats_affiches.append([ennemi.rect.x, ennemi.rect.y, str(self.degats), 60])
                 if ennemi.vie <= 0:
                     ennemis.remove(ennemi)
-                    print(f"{ennemi.type_ennemi} éliminé !")
+                    # self.ajouter_xp(20)
+                    self.ajouter_xp(1000)
+
+                  #  print(f"{ennemi.type_ennemi} éliminé !")
 
 
 
@@ -139,7 +170,43 @@ class Joueur(Personnage, pygame.sprite.Sprite):
             centre_y = self.rect.y + self.rect.height // 2 - decalage_camera_y
             pygame.draw.circle(surface, (255, 0, 0), (centre_x, centre_y), ATTAQUE_RANGE, 2)
             self.timer_attaque -= 1
+    def ajouter_xp(self, xp_gagne):
+        self.xp += xp_gagne
+        if self.xp >= self.xp_prochain_niveau:
+            self.niveau += 1
+            self.xp -= self.xp_prochain_niveau
+            self.xp_prochain_niveau *= 2
+            print(f"Niveau augmenté ! Niveau actuel : {self.niveau}")
+            afficher_choix_niveau(fenetre, self)
 
+    def afficher_xp(self, surface):
+        font = pygame.font.Font(None, 36)
+        texte_xp = font.render(f"XP: {self.xp} / {self.xp_prochain_niveau}", True, (255, 255, 255))
+        texte_niveau = font.render(f"Niveau: {self.niveau}", True, (255, 255, 255))
+        texte_or = font.render(f"Or: {self.gold}", True, (255, 255, 255))
+        surface.blit(texte_xp, (20, 50))
+        surface.blit(texte_niveau, (20, 80))
+        surface.blit(texte_or, (20, 110))
+
+        # Mise à jour de l'animation
+        if self.en_attaque:
+            self.sprite_actuel += 0.2
+            if self.sprite_actuel >= self.obtenir_frames_attaque():
+                self.en_attaque = False
+                self.sprite_actuel = 0
+        elif self.en_mouvement:
+            self.sprite_actuel += 0.2
+            if self.sprite_actuel >= 8:
+                self.sprite_actuel = 0
+
+        # Mise à jour de l'image du joueur
+        nouvelle_image = self.obtenir_frame(int(self.sprite_actuel), self.direction, self.en_course, self.en_attaque)
+        if nouvelle_image:
+            self.image = nouvelle_image
+            self.rect.width = self.image.get_width()  # Utiliser width au lieu de largeur
+            self.rect.height = self.image.get_height()  # Utiliser height au lieu de hauteur
+        else:
+            self.image = self.obtenir_frame(0, self.direction, False)
 
     def mettre_a_jour(self):
         # Mise à jour de l'animation
@@ -261,7 +328,7 @@ def charger_et_redimensionner_image(chemin):
 chemin = "images/cornes_tiles_x80/Tileset/Exports"
 corners = ["Exterior_Corners", "Exterior_Corners_v2", "Interior_Corners", "Interior_Corners_v2"]
 walls = ["Walls", "Walls_v2"]
-paths = ["path_walls", "path_interior_corners", "path_exteriors_corners"] 
+paths = ["path_walls", "path_interior_corners", "path_exteriors_corners"]
 diagonals = ["diagonals"]
 backgrounds = ["Backgrounds"]
 # Dictionnaire pour associer chaque caractère à son image
@@ -374,7 +441,67 @@ def peut_se_deplacer_vers(caractere_tuile):
     """ Vérifie si le mouvement est possible """
     return caractere_tuile == '38' or caractere_tuile.isalpha() or (caractere_tuile.isdigit() and 25 <= int(caractere_tuile) <= 38)
 
+def afficher_choix_niveau(fenetre, joueur):
+    """ Affiche trois choix d'amélioration lors d'une montée de niveau avec interface graphique """
+    choix_possibles = [
+        ("Augmentation de vie", "+50 points de vie", lambda: setattr(joueur, 'vie', joueur.vie + 50)),
+        ("Régénération de vie", "régenère 30HP", lambda: setattr(joueur, 'vie', min(joueur.vie + 30, 200))),
+        ("Dégâts augmentés", "+5 points de dégâts", lambda: setattr(joueur, 'degats', joueur.degats + 5)),
+        ("Or supplémentaire", "+100 pièces d'or", lambda: setattr(joueur, 'gold', joueur.gold + 100)),
+        ("vitesse supplémentaire", "+5  vitesse augmentée ", lambda: setattr(joueur, 'vitesse_deplacement', joueur.vitesse_deplacement + 5)),
+        ("Surprise", "Effet bonus x2 aléatoire", lambda: random.choice([
+            setattr(joueur, 'vie', joueur.vie + 100),
+            setattr(joueur, 'degats', joueur.degats + 10),
+            setattr(joueur, 'gold', joueur.gold + 200)
+        ]))
+    ]
 
+    choix = random.sample(choix_possibles, 3)
+
+    # Fond semi-transparent (70% de transparence)
+    surface_transparente = pygame.Surface((LARGEUR_FENETRE, HAUTEUR_FENETRE), pygame.SRCALPHA)
+    surface_transparente.fill((0, 0, 0, 180))
+    fenetre.blit(surface_transparente, (0, 0))
+
+    # Cadre principal plus grand
+    cadre = pygame.Rect(LARGEUR_FENETRE // 2 - 500, HAUTEUR_FENETRE // 2 - 250, 1000, 500)
+    pygame.draw.rect(fenetre, (0, 0, 0), cadre)
+    pygame.draw.rect(fenetre, (255, 255, 255), cadre, 5)
+
+    # Dessiner chaque choix en colonne
+    boutons = []
+    font = pygame.font.Font(None, 25)
+    for i, (titre, description, _) in enumerate(choix):
+        x = LARGEUR_FENETRE // 2 - 450 + (i * 350)  # Colonnes plus espacées
+        y = HAUTEUR_FENETRE // 2 - 100
+        bouton = pygame.Rect(x, y, 200, 100)
+
+        pygame.draw.rect(fenetre, (100, 100, 100), bouton)
+        pygame.draw.rect(fenetre, (255, 255, 255), bouton, 3)
+
+        texte_titre = font.render(titre, True, (255, 255, 255))
+        texte_desc = font.render(description, True, (200, 200, 200))
+
+        fenetre.blit(texte_titre, (x + 10, y + 10))
+        fenetre.blit(texte_desc, (x + 20, y + 80))
+
+        boutons.append((bouton, choix[i][2]))
+
+    pygame.display.flip()
+
+    # Attente du clic
+    choix_effectue = False
+    while not choix_effectue:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                for bouton, action in boutons:
+                    if bouton.collidepoint(event.pos):
+                        action()  # Appliquer le bonus choisi
+                        choix_effectue = True
+                        break
 def lancer_jeu(classe):
     en_cours = True
     horloge = pygame.time.Clock()
@@ -384,14 +511,8 @@ def lancer_jeu(classe):
     surface_fondu.fill((0, 0, 0))
     alpha_fondu = 255
 
-    if classe == "ASSASSIN":
-        joueur = Joueur("Joueur", 100, 50, 2, 1.5, 2, largeur_matrice // 2, hauteur_matrice // 2)
-    elif classe == "TANK":
-        joueur = Joueur("Joueur", 200, 150, 1, 1, 0.8, largeur_matrice // 2, hauteur_matrice // 2)
-    elif classe == "COMBATTANT":
-        joueur = Joueur("Joueur", 150, 100, 1.5, 1.2, 1.5, largeur_matrice // 2, hauteur_matrice // 2)
-    elif classe == "SNIPER":
-        joueur = Joueur("Joueur", 120, 60, 5, 1.8, 1, largeur_matrice // 2, hauteur_matrice // 2)
+    joueur = Joueur(classe, largeur_matrice // 2, hauteur_matrice // 2)
+
 
     orcs = generer_orcs(10, joueur)
 
@@ -476,13 +597,13 @@ def lancer_jeu(classe):
 
                 # Gestion des collisions
                 if joueur.rect.colliderect(orc.rect):
-                    joueur.vie -= 0.1  # Réduction de la vie du joueur en cas de collision
+                    joueur.vie -=  0.1  # Réduction de la vie du joueur en cas de collision
 
         #affiche les dégats de l'attaque
         joueur.afficher_zone_attaque(fenetre, decalage_camera_x, decalage_camera_y)
         # Affichage de la barre de vie du joueur
-        afficher_barre_vie(fenetre, 20, 20, 200, 20, joueur.vie, 100, (255, 0, 0), (0, 255, 0))
-
+        afficher_barre_vie(fenetre, 20, 20, 200, 20, joueur.vie, joueur.vie, (255, 0, 0), (0, 255, 0))
+        joueur.afficher_xp(fenetre)
         if joueur.vie <= 0:
             afficher_game_over(fenetre)
             return
