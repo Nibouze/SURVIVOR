@@ -21,16 +21,19 @@ def effet_zoom_fondu(ecran, image, cible):
     surface_fade.fill(NOIR)
     volume = pygame.mixer.music.get_volume()
 
-    while zoom < 5.5:
+    while zoom < 5:
         clock.tick(30)
         ecran.fill(NOIR)
         taille = (int(LARGEUR * zoom), int(HAUTEUR * zoom))
         image_zoom = pygame.transform.scale(image, taille)
-        x = -((cible[0] + 420) * (zoom - 1))
-        y = -((cible[1] - 50) * (zoom - 1))
+
+        # Décalage pour que le zoom soit centré en haut mais vers la gauche
+        x = int((LARGEUR - taille[0]) // 2) - 30  # Décalé vers la gauche de 100px
+        y = 0  # Positionné en haut
+
         ecran.blit(image_zoom, (x, y))
         pygame.display.flip()
-        zoom += 0.15
+        zoom += 0.1
         volume = max(0, volume - 0.03)
         pygame.mixer.music.set_volume(volume)
 
@@ -44,6 +47,7 @@ def effet_zoom_fondu(ecran, image, cible):
         pygame.mixer.music.set_volume(volume)
 
     pygame.mixer.music.stop()
+
 
 # Classe du menu principal
 class Menu:
@@ -72,6 +76,7 @@ class Menu:
                     return option
         return None
 
+# Ajoutez cette impression après la sélection de la classe pour vérifier la classe choisie
 def choisir_classe(ecran, image_fond):
     """ Affiche le menu de sélection de classe et renvoie la classe choisie. """
     options = ["ASSASSIN", "TANK", "COMBATTANT", "SNIPER"]
@@ -95,6 +100,7 @@ def choisir_classe(ecran, image_fond):
             choix = menu.gerer_evenement(event)
             if choix:
                 effet_zoom_fondu(ecran, image_fond, positions[choix])
+                print(f"Classe choisie: {choix}")  # Impression de débogage
                 return choix
 
 def lancer_musique():
@@ -152,7 +158,35 @@ def options_menu(ecran, image_fond, volume_actuel):
                         volume_actuel = (souris_x - bar_x) / largeur_bar
                         pygame.mixer.music.set_volume(volume_actuel)
 
+def comment_jouer(ecran, image_fond):
+    """ Affiche les instructions de jeu."""
+    while True:
+        ecran.blit(pygame.transform.scale(image_fond, (LARGEUR, HAUTEUR)), (0, 0))
 
+        font = pygame.font.Font("VINERITC.ttf", 50)
+        titre = font.render("COMMENT JOUER", True, BLANC)
+        ecran.blit(titre, (LARGEUR // 2 - 200, 100))
+
+        instructions = [
+            "marcher : Touches fléchées",
+            "courir : Touches ZQSD",
+            "Attaque : clique souris gauche",
+            "Menu or : Touche 1"
+        ]
+
+        font = pygame.font.Font("VINERITC.ttf", 30)
+        for i, instruction in enumerate(instructions):
+            texte = font.render(instruction, True, BLANC)
+            ecran.blit(texte, (LARGEUR // 2 - 300, 200 + i * 50))
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                return  # Retour au menu principal
 
 def changement_volume(souris_pos, volume_actuel):
     """Modifie le volume en fonction de la position de la souris."""
@@ -173,11 +207,13 @@ def main():
     ecran = pygame.display.set_mode((LARGEUR, HAUTEUR))
     pygame.display.set_caption("Menu Principal")
     image_fond = charger_image()
-    menu = Menu(ecran, ["JOUER", "OPTIONS", "EXIT"], {
-        "JOUER": (350, 180),
-        "EXIT": (LARGEUR - 300, 180),
-        "OPTIONS": (370, HAUTEUR - 200)
+    menu = Menu(ecran, ["JOUER", "OPTIONS", "EXIT", "COMMENT JOUER"], {
+        "JOUER": (250, 100),
+        "EXIT": (LARGEUR - 250, 100),
+        "OPTIONS": (250, HAUTEUR - 100),
+        "COMMENT JOUER": (LARGEUR - 400, HAUTEUR - 100)
     })
+
     volume = 0.5
 
     while True:
@@ -196,6 +232,8 @@ def main():
                     jeu.lancer_jeu(classe)
                 elif choix == "OPTIONS":
                     volume = options_menu(ecran, image_fond, volume)
+                elif choix == "COMMENT JOUER":
+                    comment_jouer(ecran, image_fond)
                 elif choix == "EXIT":
                     pygame.quit()
                     sys.exit()
