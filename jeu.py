@@ -170,8 +170,12 @@ class Joueur(Personnage, pygame.sprite.Sprite):
                 if distance <= range_attaque:
                     ennemi.vie -= self.degats
                     self.degats_affiches.append([ennemi.rect.x, ennemi.rect.y, str(self.degats), 60])
+                    if ennemi.vie <= 0:
+                        ennemis.remove(ennemi)
+                        self.ajouter_xp(10)
             if boss and boss_spawned:
                 distance_boss = ((boss.rect.centerx - centre_x) ** 2 + (boss.rect.centery - centre_y) ** 2) ** 0.5
+
                 if distance_boss <= range_attaque:
                     boss.subir_degats(self.degats)
                     # Appliquer le vol de vie
