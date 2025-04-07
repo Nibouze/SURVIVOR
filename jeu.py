@@ -43,10 +43,10 @@ class Joueur(Personnage, pygame.sprite.Sprite):
 
         # Définition des stats et du dossier des sprites selon la classe
         stats = {
-            "ASSASSIN": {"vie": 100, "distance_attaque": 150, "vitesse_recup": 1, "vitesse_deplacement": 2, "degats": 25, "sprite_folder": "sprites/assassin/"},
-            "TANK": {"vie": 280, "distance_attaque": 100, "vitesse_recup": 0.8, "vitesse_deplacement": 0.6, "degats": 50, "sprite_folder": "sprites/tank/"},
-            "COMBATTANT": {"vie": 150, "distance_attaque":125 , "vitesse_recup": 0.7, "vitesse_deplacement": 1.5, "degats": 75, "sprite_folder": "sprites/combattant/"},
-            "SNIPER": {"vie": 120, "distance_attaque": 200 , "vitesse_recup": 0.5, "vitesse_deplacement": 1, "degats": 100, "sprite_folder": "sprites/sniper/"}
+            "ASSASSIN": {"vie": 100, "distance_attaque": 150, "vitesse_recup": 1, "vitesse_deplacement": 7, "degats": 25, "sprite_folder": "sprites/assassin/"},
+            "TANK": {"vie": 280, "distance_attaque": 100, "vitesse_recup": 0.8, "vitesse_deplacement": 6, "degats": 50, "sprite_folder": "sprites/tank/"},
+            "COMBATTANT": {"vie": 150, "distance_attaque":125 , "vitesse_recup": 0.7, "vitesse_deplacement": 7, "degats": 75, "sprite_folder": "sprites/combattant/"},
+            "SNIPER": {"vie": 120, "distance_attaque": 200 , "vitesse_recup": 0.5, "vitesse_deplacement": 8, "degats": 100, "sprite_folder": "sprites/sniper/"}
         }
 
         if classe not in stats:
@@ -141,6 +141,10 @@ class Joueur(Personnage, pygame.sprite.Sprite):
 
     def commencer_mouvement(self, direction, en_course):
         """Début du mouvement"""
+        if self.en_attaque:
+            self.en_mouvement = True
+            self.en_course = en_course
+            self.direction = direction
         if not self.en_attaque:
             self.en_mouvement = True
             self.en_course = en_course
@@ -208,7 +212,7 @@ class Joueur(Personnage, pygame.sprite.Sprite):
             self.niveau += 1
             self.xp -= self.xp_prochain_niveau
             self.xp_prochain_niveau *= 2
-            self.son_level_up.play()  # 🎵 Joue le son de level-up !
+            self.son_level_up.play()
             print(f"Niveau augmenté ! Niveau actuel : {self.niveau}")
             afficher_choix_niveau(fenetre, self)
 
@@ -371,6 +375,7 @@ class BossOrc(Ennemi, pygame.sprite.Sprite):
 
         frame_image = self.spritesheet_course.subsurface(pygame.Rect(x, y, self.largeur_frame // 2, self.hauteur_frame // 2))
         return pygame.transform.scale(frame_image, (self.largeur_frame, self.hauteur_frame))
+
     def attaquer_joueur(self, joueur):
         """Inflige des dégâts au joueur s'il est touché"""
         temps_actuel = pygame.time.get_ticks()
@@ -776,36 +781,36 @@ def lancer_jeu(classe):
         touches = pygame.key.get_pressed()
 
         deplacement_x, deplacement_y = 0, 0
-        vitesse = VITESSE_COURSE if touches[pygame.K_z] or touches[pygame.K_q] or touches[pygame.K_s] or touches[pygame.K_d] else VITESSE_MARCHE
+        vitesse = joueur.vitesse_deplacement if touches[pygame.K_z] or touches[pygame.K_q] or touches[pygame.K_s] or touches[pygame.K_d] else joueur.vitesse_deplacement/2
 
-        if not joueur.en_attaque:
-            if touches[pygame.K_z]:
-                joueur.commencer_mouvement("haut", en_course=True)
-                deplacement_y = -vitesse
-            elif touches[pygame.K_UP]:
-                joueur.commencer_mouvement("haut", en_course=False)
-                deplacement_y = -vitesse
 
-            if touches[pygame.K_s]:
-                joueur.commencer_mouvement("bas", en_course=True)
-                deplacement_y = vitesse
-            elif touches[pygame.K_DOWN]:
-                joueur.commencer_mouvement("bas", en_course=False)
-                deplacement_y = vitesse
+        if touches[pygame.K_z]:
+            joueur.commencer_mouvement("haut", en_course=True)
+            deplacement_y = -vitesse
+        elif touches[pygame.K_UP]:
+            joueur.commencer_mouvement("haut", en_course=False)
+            deplacement_y = -vitesse
 
-            if touches[pygame.K_q]:
-                joueur.commencer_mouvement("gauche", en_course=True)
-                deplacement_x = -vitesse
-            elif touches[pygame.K_LEFT]:
-                joueur.commencer_mouvement("gauche", en_course=False)
-                deplacement_x = -vitesse
+        if touches[pygame.K_s]:
+            joueur.commencer_mouvement("bas", en_course=True)
+            deplacement_y = vitesse
+        elif touches[pygame.K_DOWN]:
+            joueur.commencer_mouvement("bas", en_course=False)
+            deplacement_y = vitesse
 
-            if touches[pygame.K_d]:
-                joueur.commencer_mouvement("droite", en_course=True)
-                deplacement_x = vitesse
-            elif touches[pygame.K_RIGHT]:
-                joueur.commencer_mouvement("droite", en_course=False)
-                deplacement_x = vitesse
+        if touches[pygame.K_q]:
+            joueur.commencer_mouvement("gauche", en_course=True)
+            deplacement_x = -vitesse
+        elif touches[pygame.K_LEFT]:
+            joueur.commencer_mouvement("gauche", en_course=False)
+            deplacement_x = -vitesse
+
+        if touches[pygame.K_d]:
+            joueur.commencer_mouvement("droite", en_course=True)
+            deplacement_x = vitesse
+        elif touches[pygame.K_RIGHT]:
+            joueur.commencer_mouvement("droite", en_course=False)
+            deplacement_x = vitesse
 
         nouvelle_ligne = (joueur.rect.y + deplacement_y + 10) // TAILLE_TUILE
         nouvelle_colonne = (joueur.rect.x + deplacement_x) // TAILLE_TUILE
