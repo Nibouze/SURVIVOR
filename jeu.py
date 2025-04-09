@@ -455,57 +455,144 @@ def charger_et_redimensionner_image(chemin):
         return None
 
 # Liste des chemins pour une modification facilitée
-chemin = "images/cornes_tiles_x80/Tileset/Exports"
-corners = ["Exterior_Corners", "Exterior_Corners_v2", "Interior_Corners", "Interior_Corners_v2"]
-walls = ["Walls", "Walls_v2"]
-paths = ["path_walls", "path_interior_corners", "path_exteriors_corners"]
-diagonals = ["diagonals"]
-backgrounds = ["Backgrounds"]
-# Dictionnaire pour associer chaque caractère à son image
-dictionnaire_images = {
-    0 : charger_et_redimensionner_image(f'{chemin}/{corners[0]}/top_left_exterior_corner.png'),
-    1 : charger_et_redimensionner_image(f'{chemin}/{corners[0]}/top_right_exterior_corner.png'),
-    2 : charger_et_redimensionner_image(f'{chemin}/{corners[2]}/top_left_interior_corner.png'),
-    3 : charger_et_redimensionner_image(f'{chemin}/{corners[2]}/top_right_interior_corner.png'),
-    4 : charger_et_redimensionner_image(f'{chemin}/{walls[0]}/right.png'),
-    5 : charger_et_redimensionner_image(f'{chemin}/{walls[0]}/bottom.png'),
-    6 : charger_et_redimensionner_image(f'{chemin}/{corners[0]}/bottom_left_exterior_corner.png'),
-    7 : charger_et_redimensionner_image(f'{chemin}/{corners[0]}/bottom_right_exterior_corner.png'),
-    8 : charger_et_redimensionner_image(f'{chemin}/{corners[2]}/bottom_left_interior_corner.png'),
-    9 : charger_et_redimensionner_image(f'{chemin}/{corners[2]}/bottom_right_interior_corner.png'),
-    10: charger_et_redimensionner_image(f'{chemin}/{walls[0]}/top.png'),
-    11: charger_et_redimensionner_image(f'{chemin}/{walls[0]}/left.png'),
-    12: charger_et_redimensionner_image(f'{chemin}/{corners[1]}/top_left_exterior_corner.png'),
-    13: charger_et_redimensionner_image(f'{chemin}/{corners[1]}/top_right_exterior_corner.png'),
-    14: charger_et_redimensionner_image(f'{chemin}/{corners[3]}/top_left_interior_corner.png'),
-    15: charger_et_redimensionner_image(f'{chemin}/{corners[3]}/top_right_interior_corner.png'),
-    16: charger_et_redimensionner_image(f'{chemin}/{walls[1]}/right.png'),
-    17: charger_et_redimensionner_image(f'{chemin}/{walls[1]}/bottom.png'),
-    18: charger_et_redimensionner_image(f'{chemin}/{corners[1]}/bottom_left_exterior_corner.png'),
-    19: charger_et_redimensionner_image(f'{chemin}/{corners[1]}/bottom_right_exterior_corner.png'),
-    20: charger_et_redimensionner_image(f'{chemin}/{corners[3]}/bottom_left_interior_corner.png'),
-    21: charger_et_redimensionner_image(f'{chemin}/{corners[3]}/bottom_right_interior_corner.png'),
-    22: charger_et_redimensionner_image(f'{chemin}/{walls[1]}/top.png'),
-    23: charger_et_redimensionner_image(f'{chemin}/{walls[1]}/left.png'),
-    24: charger_et_redimensionner_image(f'{chemin}/{paths[0]}/path_left_wall.png'),
-    25: charger_et_redimensionner_image(f'{chemin}/{paths[0]}/path_top_wall.png'),
-    26: charger_et_redimensionner_image(f'{chemin}/{paths[1]}/path_top_left_corner.png'),
-    27: charger_et_redimensionner_image(f'{chemin}/{paths[1]}/path_top_right_corner.png'),
-    28: charger_et_redimensionner_image(f'{chemin}/{paths[2]}/path_top_left_corner.png'),
-    29: charger_et_redimensionner_image(f'{chemin}/{paths[2]}/path_top_right_corner.png'),
-    30: charger_et_redimensionner_image(f'{chemin}/{paths[0]}/path_bottom_wall.png'),
-    31: charger_et_redimensionner_image(f'{chemin}/{paths[0]}/path_right_wall.png'),
-    32: charger_et_redimensionner_image(f'{chemin}/{paths[1]}/path_bottom_left_corner.png'),
-    33: charger_et_redimensionner_image(f'{chemin}/{paths[1]}/path_bottom_right_corner.png'),
-    34: charger_et_redimensionner_image(f'{chemin}/{paths[2]}/path_bottom_left_corner.png'),
-    35: charger_et_redimensionner_image(f'{chemin}/{paths[2]}/path_bottom_right_corner.png'),
-    36: charger_et_redimensionner_image(f'{chemin}/{backgrounds[0]}/path_bg_color.png'),
-    37: charger_et_redimensionner_image(f'{chemin}/{backgrounds[0]}/exterior_background.png'),
-    38: charger_et_redimensionner_image(f'{chemin}/{backgrounds[0]}/interior_background.png'),
-    40: charger_et_redimensionner_image(f'{chemin}/{diagonals[0]}/diagonal_top-left_bottom-right.png'),
-    41: charger_et_redimensionner_image(f'{chemin}/{diagonals[0]}/diagonal_bottom-left_top-right.png'),
+chemin = "TILESETS"
+tileset = ["TILESET_1", "TILESET_2"]
+opacity = ["Plein", "Vide"]
+ext_int = ["Exteriors", "Interiors"]
+paths = ["Corners", "Straight", "Diagonals"]
 
+# Dictionnaire pour associer chaque caractère à son image
+# 0-41 : TILESET_1
+# 42-84 : TILESET_2
+dictionnaire_images = {
+    # =============== COINS ===============
+        # --------------- TILESET_1 ---------------
+            # Coins Exterieurs Plein
+    0 : charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[0]}/{ext_int[0]}/EXT-TL.png'),
+    1 : charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[0]}/{ext_int[0]}/EXT-TR.png'),
+    6 : charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[0]}/{ext_int[0]}/EXT-BL.png'),
+    7 : charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[0]}/{ext_int[0]}/EXT-BR.png'),
+            # Coins Interieurs Plein
+    2 : charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[0]}/{ext_int[1]}/INT-TL.png'),
+    3 : charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[0]}/{ext_int[1]}/INT-TR.png'),
+    8 : charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[0]}/{ext_int[1]}/INT-BL.png'),
+    9 : charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[0]}/{ext_int[1]}/INT-BR.png'),
+            # Coins Exterieurs Vide
+    12: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[1]}/{ext_int[0]}/EXT-TL-V.png'),
+    13: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[1]}/{ext_int[0]}/EXT-TR-V.png'),
+    18: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[1]}/{ext_int[0]}/EXT-BL-V.png'),
+    19: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[1]}/{ext_int[0]}/EXT-BR-V.png'),
+            # Coins Interieurs Vide
+    14: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[1]}/{ext_int[1]}/INT-TL-V.png'),
+    15: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[1]}/{ext_int[1]}/INT-TR-V.png'),
+    20: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[0]}/{ext_int[1]}/INT-BL-V.png'),
+    21: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[0]}/{ext_int[1]}/INT-BR-V.png'),
+    
+        # --------------- TILESET_2 ---------------
+            # Coins Exterieurs Plein
+    42 : charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[0]}/{ext_int[0]}/EXT-TL.png'),
+    43 : charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[0]}/{ext_int[0]}/EXT-TR.png'),
+    48 : charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[0]}/{ext_int[0]}/EXT-BL.png'),
+    49 : charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[0]}/{ext_int[0]}/EXT-BR.png'),
+            # Coins Interieurs Plein
+    44 : charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[0]}/{ext_int[1]}/INT-TL.png'),
+    45 : charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[0]}/{ext_int[1]}/INT-TR.png'),
+    50 : charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[0]}/{ext_int[1]}/INT-BL.png'),
+    51 : charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[0]}/{ext_int[1]}/INT-BR.png'),
+            # Coins Exterieurs Vide
+    54: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[1]}/{ext_int[0]}/EXT-TL-V.png'),
+    55: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[1]}/{ext_int[0]}/EXT-TR-V.png'),
+    60: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[1]}/{ext_int[0]}/EXT-BL-V.png'),
+    61: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[1]}/{ext_int[0]}/EXT-BR-V.png'),
+            # Coins Interieurs Vide
+    56: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[1]}/{ext_int[1]}/INT-TL-V.png'),
+    57: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[1]}/{ext_int[1]}/INT-TR-V.png'),
+    62: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[0]}/{ext_int[1]}/INT-BL-V.png'),
+    63: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[0]}/{ext_int[1]}/INT-BR-V.png'),
+
+
+    # =============== MURS ===============
+        # --------------- TILESET_1 ---------------
+            # Murs Plein
+    4 : charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Walls/{opacity[0]}/WALL-R.png'),
+    5 : charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Walls/{opacity[0]}/WALL-B.png'),
+    10: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Walls/{opacity[0]}/WALL-T.png'),
+    11: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Walls/{opacity[0]}/WALL-L.png'),
+            # Murs Vide
+    16: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Walls/{opacity[1]}/WALL-R-V.png'),
+    17: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Walls/{opacity[1]}/WALL-B-V.png'),
+    22: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Walls/{opacity[1]}/WALL-T-V.png'),
+    23: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Walls/{opacity[1]}/WALL-L-V.png'),
+    
+        # --------------- TILESET_2 ---------------
+            # Murs Plein
+    46 : charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Walls/{opacity[0]}/WALL-R.png'),
+    47 : charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Walls/{opacity[0]}/WALL-B.png'),
+    52: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Walls/{opacity[0]}/WALL-T.png'),
+    53: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Walls/{opacity[0]}/WALL-L.png'),
+            # Murs Vide
+    58: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Walls/{opacity[1]}/WALL-R-V.png'),
+    59: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Walls/{opacity[1]}/WALL-B-V.png'),
+    64: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Walls/{opacity[1]}/WALL-T-V.png'),
+    65: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Walls/{opacity[1]}/WALL-L-V.png'),
+    
+    
+    # =============== CHEMINS ===============
+        # --------------- TILESET_1 ---------------
+            # Coins Exterieurs
+    28: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[0]}/{ext_int[0]}/EXT-TL.png'),
+    29: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[0]}/{ext_int[0]}/EXT-TR.png'),
+    34: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[0]}/{ext_int[0]}/EXT-BL.png'),
+    35: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[0]}/{ext_int[0]}/EXT-BR.png'),
+            # Coins Interieurs
+    26: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[0]}/{ext_int[1]}/INT-TL.png'),
+    27: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[0]}/{ext_int[1]}/INT-TR.png'),
+    32: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[0]}/{ext_int[1]}/INT-BL.png'),
+    33: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[0]}/{ext_int[1]}/INT-BR.png'),
+            # Chemins Droits
+    24: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[1]}/STRG-L.png'),
+    25: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[1]}/STRG-T.png'),
+    30: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[1]}/STRG-B.png'),
+    31: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[1]}/STRG-R.png'),
+            # Diagonales
+    40: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[2]}/DIAG-TL_BR.png'),
+    41: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[2]}/DIAG-BL_TR.png'),
+    
+        # --------------- TILESET_2 ---------------
+            # Coins Exterieurs
+    70: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[0]}/{ext_int[0]}/EXT-TL.png'),
+    71: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[0]}/{ext_int[0]}/EXT-TR.png'),
+    76: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[0]}/{ext_int[0]}/EXT-BL.png'),
+    77: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[0]}/{ext_int[0]}/EXT-BR.png'),
+            # Coins Interieurs
+    68: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[0]}/{ext_int[1]}/INT-TL.png'),
+    69: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[0]}/{ext_int[1]}/INT-TR.png'),
+    74: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[0]}/{ext_int[1]}/INT-BL.png'),
+    75: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[0]}/{ext_int[1]}/INT-BR.png'),
+            # Chemins Droits
+    66: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[1]}/STRG-L.png'),
+    67: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[1]}/STRG-T.png'),
+    72: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[1]}/STRG-B.png'),
+    73: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[1]}/STRG-R.png'),
+            # Diagonales
+    82: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[2]}/DIAG-TL_BR.png'),
+    83: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[2]}/DIAG-BL_TR.png'),
+    
+    
+    # =============== COULEURS UNIES ===============
+        # --------------- TILESET_1 ---------------
+    36: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Colors/COL-PATH.png'),
+    37: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Colors/COL-EXT.png'),
+    38: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Colors/COL-INT.png'),
+    
+        # --------------- TILESET_2 ---------------
+    78: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Colors/COL-PATH.png'),
+    79: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Colors/COL-EXT.png'),
+    80: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Colors/COL-INT.png'),
+    84: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Colors/COL-GROUND.png'),
 }
+
+
 
 # Chargement de la carte CSV
 def charger_matrice_depuis_csv(chemin_fichier):
