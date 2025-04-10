@@ -43,10 +43,10 @@ class Joueur(Personnage, pygame.sprite.Sprite):
 
         # Définition des stats et du dossier des sprites selon la classe
         stats = {
-            "ASSASSIN": {"vie": 100, "distance_attaque": 150, "vitesse_recup": 1, "vitesse_deplacement": 7, "degats": 25, "sprite_folder": "sprites/assassin/"},
-            "TANK": {"vie": 280, "distance_attaque": 100, "vitesse_recup": 0.8, "vitesse_deplacement": 6, "degats": 50, "sprite_folder": "sprites/tank/"},
-            "COMBATTANT": {"vie": 150, "distance_attaque":125 , "vitesse_recup": 0.7, "vitesse_deplacement": 7, "degats": 75, "sprite_folder": "sprites/combattant/"},
-            "SNIPER": {"vie": 120, "distance_attaque": 200 , "vitesse_recup": 0.5, "vitesse_deplacement": 8, "degats": 100, "sprite_folder": "sprites/sniper/"}
+            "ASSASSIN": {"vie": 100, "distance_attaque": 150, "vitesse_recup": 1.5, "vitesse_deplacement": 8, "degats": 30, "sprite_folder": "sprites/assassin/"},
+            "TANK": {"vie": 280, "distance_attaque": 100, "vitesse_recup": 0.8, "vitesse_deplacement": 6, "degats": 40, "sprite_folder": "sprites/tank/"},
+            "COMBATTANT": {"vie": 150, "distance_attaque":125 , "vitesse_recup": 0.7, "vitesse_deplacement": 7, "degats": 40, "sprite_folder": "sprites/combattant/"},
+            "SNIPER": {"vie": 120, "distance_attaque": 200 , "vitesse_recup": 0.5, "vitesse_deplacement": 6, "degats": 80, "sprite_folder": "sprites/sniper/"}
         }
 
         if classe not in stats:
@@ -64,7 +64,7 @@ class Joueur(Personnage, pygame.sprite.Sprite):
         self.niveau = 1
         self.dot = 0
         self.vol_vie = 0
-        self.xp_prochain_niveau = 100
+        self.xp_prochain_niveau = 50
         self.sprite_folder = stats[classe]["sprite_folder"]
         #self.sprite_folder = 'sprites/player/'
 
@@ -194,7 +194,7 @@ class Joueur(Personnage, pygame.sprite.Sprite):
                     if ennemi.vie <= 0:
                         ennemis.remove(ennemi)
                         self.ajouter_xp(10)
-
+                        self.gold+10
 
 
     def afficher_zone_attaque(self, surface, decalage_camera_x, decalage_camera_y):
@@ -210,8 +210,8 @@ class Joueur(Personnage, pygame.sprite.Sprite):
         self.xp += xp_gagne
         if self.xp >= self.xp_prochain_niveau:
             self.niveau += 1
-            self.xp -= self.xp_prochain_niveau
-            self.xp_prochain_niveau *= 2
+            self.xp = self.xp_prochain_niveau
+            self.xp_prochain_niveau += 50
             self.son_level_up.play()
             print(f"Niveau augmenté ! Niveau actuel : {self.niveau}")
             afficher_choix_niveau(fenetre, self)
@@ -276,7 +276,7 @@ class Joueur(Personnage, pygame.sprite.Sprite):
 
 
 class Orc(Ennemi, pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
+    def __init__(self, pos_x, pos_y,):
         Ennemi.__init__(self, type_ennemi="Orc", vie=100, degats=1, distance_attaque=1, vitesse_deplacement=VITESSE_MARCHE, x=pos_x, y=pos_y)
         pygame.sprite.Sprite.__init__(self)
         self.spritesheet_course = pygame.image.load('sprites/orc/orc_run.png')
@@ -343,6 +343,7 @@ class Orc(Ennemi, pygame.sprite.Sprite):
 
         if self.rect.colliderect(joueur.rect):
             self.attaquer_joueur(joueur)
+
 
 class BossOrc(Ennemi, pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -455,144 +456,57 @@ def charger_et_redimensionner_image(chemin):
         return None
 
 # Liste des chemins pour une modification facilitée
-chemin = "TILESETS"
-tileset = ["TILESET_1", "TILESET_2"]
-opacity = ["Plein", "Vide"]
-ext_int = ["Exteriors", "Interiors"]
-paths = ["Corners", "Straight", "Diagonals"]
-
+chemin = "images/cornes_tiles_x80/Tileset/Exports"
+corners = ["Exterior_Corners", "Exterior_Corners_v2", "Interior_Corners", "Interior_Corners_v2"]
+walls = ["Walls", "Walls_v2"]
+paths = ["path_walls", "path_interior_corners", "path_exteriors_corners"]
+diagonals = ["diagonals"]
+backgrounds = ["Backgrounds"]
 # Dictionnaire pour associer chaque caractère à son image
-# 0-41 : TILESET_1
-# 42-84 : TILESET_2
 dictionnaire_images = {
-    # =============== COINS ===============
-        # --------------- TILESET_1 ---------------
-            # Coins Exterieurs Plein
-    0 : charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[0]}/{ext_int[0]}/EXT-TL.png'),
-    1 : charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[0]}/{ext_int[0]}/EXT-TR.png'),
-    6 : charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[0]}/{ext_int[0]}/EXT-BL.png'),
-    7 : charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[0]}/{ext_int[0]}/EXT-BR.png'),
-            # Coins Interieurs Plein
-    2 : charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[0]}/{ext_int[1]}/INT-TL.png'),
-    3 : charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[0]}/{ext_int[1]}/INT-TR.png'),
-    8 : charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[0]}/{ext_int[1]}/INT-BL.png'),
-    9 : charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[0]}/{ext_int[1]}/INT-BR.png'),
-            # Coins Exterieurs Vide
-    12: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[1]}/{ext_int[0]}/EXT-TL-V.png'),
-    13: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[1]}/{ext_int[0]}/EXT-TR-V.png'),
-    18: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[1]}/{ext_int[0]}/EXT-BL-V.png'),
-    19: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[1]}/{ext_int[0]}/EXT-BR-V.png'),
-            # Coins Interieurs Vide
-    14: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[1]}/{ext_int[1]}/INT-TL-V.png'),
-    15: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[1]}/{ext_int[1]}/INT-TR-V.png'),
-    20: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[0]}/{ext_int[1]}/INT-BL-V.png'),
-    21: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Corners/{opacity[0]}/{ext_int[1]}/INT-BR-V.png'),
-    
-        # --------------- TILESET_2 ---------------
-            # Coins Exterieurs Plein
-    42 : charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[0]}/{ext_int[0]}/EXT-TL.png'),
-    43 : charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[0]}/{ext_int[0]}/EXT-TR.png'),
-    48 : charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[0]}/{ext_int[0]}/EXT-BL.png'),
-    49 : charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[0]}/{ext_int[0]}/EXT-BR.png'),
-            # Coins Interieurs Plein
-    44 : charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[0]}/{ext_int[1]}/INT-TL.png'),
-    45 : charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[0]}/{ext_int[1]}/INT-TR.png'),
-    50 : charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[0]}/{ext_int[1]}/INT-BL.png'),
-    51 : charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[0]}/{ext_int[1]}/INT-BR.png'),
-            # Coins Exterieurs Vide
-    54: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[1]}/{ext_int[0]}/EXT-TL-V.png'),
-    55: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[1]}/{ext_int[0]}/EXT-TR-V.png'),
-    60: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[1]}/{ext_int[0]}/EXT-BL-V.png'),
-    61: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[1]}/{ext_int[0]}/EXT-BR-V.png'),
-            # Coins Interieurs Vide
-    56: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[1]}/{ext_int[1]}/INT-TL-V.png'),
-    57: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[1]}/{ext_int[1]}/INT-TR-V.png'),
-    62: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[0]}/{ext_int[1]}/INT-BL-V.png'),
-    63: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Corners/{opacity[0]}/{ext_int[1]}/INT-BR-V.png'),
+    0 : charger_et_redimensionner_image(f'{chemin}/{corners[0]}/top_left_exterior_corner.png'),
+    1 : charger_et_redimensionner_image(f'{chemin}/{corners[0]}/top_right_exterior_corner.png'),
+    2 : charger_et_redimensionner_image(f'{chemin}/{corners[2]}/top_left_interior_corner.png'),
+    3 : charger_et_redimensionner_image(f'{chemin}/{corners[2]}/top_right_interior_corner.png'),
+    4 : charger_et_redimensionner_image(f'{chemin}/{walls[0]}/right.png'),
+    5 : charger_et_redimensionner_image(f'{chemin}/{walls[0]}/bottom.png'),
+    6 : charger_et_redimensionner_image(f'{chemin}/{corners[0]}/bottom_left_exterior_corner.png'),
+    7 : charger_et_redimensionner_image(f'{chemin}/{corners[0]}/bottom_right_exterior_corner.png'),
+    8 : charger_et_redimensionner_image(f'{chemin}/{corners[2]}/bottom_left_interior_corner.png'),
+    9 : charger_et_redimensionner_image(f'{chemin}/{corners[2]}/bottom_right_interior_corner.png'),
+    10: charger_et_redimensionner_image(f'{chemin}/{walls[0]}/top.png'),
+    11: charger_et_redimensionner_image(f'{chemin}/{walls[0]}/left.png'),
+    12: charger_et_redimensionner_image(f'{chemin}/{corners[1]}/top_left_exterior_corner.png'),
+    13: charger_et_redimensionner_image(f'{chemin}/{corners[1]}/top_right_exterior_corner.png'),
+    14: charger_et_redimensionner_image(f'{chemin}/{corners[3]}/top_left_interior_corner.png'),
+    15: charger_et_redimensionner_image(f'{chemin}/{corners[3]}/top_right_interior_corner.png'),
+    16: charger_et_redimensionner_image(f'{chemin}/{walls[1]}/right.png'),
+    17: charger_et_redimensionner_image(f'{chemin}/{walls[1]}/bottom.png'),
+    18: charger_et_redimensionner_image(f'{chemin}/{corners[1]}/bottom_left_exterior_corner.png'),
+    19: charger_et_redimensionner_image(f'{chemin}/{corners[1]}/bottom_right_exterior_corner.png'),
+    20: charger_et_redimensionner_image(f'{chemin}/{corners[3]}/bottom_left_interior_corner.png'),
+    21: charger_et_redimensionner_image(f'{chemin}/{corners[3]}/bottom_right_interior_corner.png'),
+    22: charger_et_redimensionner_image(f'{chemin}/{walls[1]}/top.png'),
+    23: charger_et_redimensionner_image(f'{chemin}/{walls[1]}/left.png'),
+    24: charger_et_redimensionner_image(f'{chemin}/{paths[0]}/path_left_wall.png'),
+    25: charger_et_redimensionner_image(f'{chemin}/{paths[0]}/path_top_wall.png'),
+    26: charger_et_redimensionner_image(f'{chemin}/{paths[1]}/path_top_left_corner.png'),
+    27: charger_et_redimensionner_image(f'{chemin}/{paths[1]}/path_top_right_corner.png'),
+    28: charger_et_redimensionner_image(f'{chemin}/{paths[2]}/path_top_left_corner.png'),
+    29: charger_et_redimensionner_image(f'{chemin}/{paths[2]}/path_top_right_corner.png'),
+    30: charger_et_redimensionner_image(f'{chemin}/{paths[0]}/path_bottom_wall.png'),
+    31: charger_et_redimensionner_image(f'{chemin}/{paths[0]}/path_right_wall.png'),
+    32: charger_et_redimensionner_image(f'{chemin}/{paths[1]}/path_bottom_left_corner.png'),
+    33: charger_et_redimensionner_image(f'{chemin}/{paths[1]}/path_bottom_right_corner.png'),
+    34: charger_et_redimensionner_image(f'{chemin}/{paths[2]}/path_bottom_left_corner.png'),
+    35: charger_et_redimensionner_image(f'{chemin}/{paths[2]}/path_bottom_right_corner.png'),
+    36: charger_et_redimensionner_image(f'{chemin}/{backgrounds[0]}/path_bg_color.png'),
+    37: charger_et_redimensionner_image(f'{chemin}/{backgrounds[0]}/exterior_background.png'),
+    38: charger_et_redimensionner_image(f'{chemin}/{backgrounds[0]}/interior_background.png'),
+    40: charger_et_redimensionner_image(f'{chemin}/{diagonals[0]}/diagonal_top-left_bottom-right.png'),
+    41: charger_et_redimensionner_image(f'{chemin}/{diagonals[0]}/diagonal_bottom-left_top-right.png'),
 
-
-    # =============== MURS ===============
-        # --------------- TILESET_1 ---------------
-            # Murs Plein
-    4 : charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Walls/{opacity[0]}/WALL-R.png'),
-    5 : charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Walls/{opacity[0]}/WALL-B.png'),
-    10: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Walls/{opacity[0]}/WALL-T.png'),
-    11: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Walls/{opacity[0]}/WALL-L.png'),
-            # Murs Vide
-    16: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Walls/{opacity[1]}/WALL-R-V.png'),
-    17: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Walls/{opacity[1]}/WALL-B-V.png'),
-    22: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Walls/{opacity[1]}/WALL-T-V.png'),
-    23: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Walls/{opacity[1]}/WALL-L-V.png'),
-    
-        # --------------- TILESET_2 ---------------
-            # Murs Plein
-    46 : charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Walls/{opacity[0]}/WALL-R.png'),
-    47 : charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Walls/{opacity[0]}/WALL-B.png'),
-    52: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Walls/{opacity[0]}/WALL-T.png'),
-    53: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Walls/{opacity[0]}/WALL-L.png'),
-            # Murs Vide
-    58: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Walls/{opacity[1]}/WALL-R-V.png'),
-    59: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Walls/{opacity[1]}/WALL-B-V.png'),
-    64: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Walls/{opacity[1]}/WALL-T-V.png'),
-    65: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Walls/{opacity[1]}/WALL-L-V.png'),
-    
-    
-    # =============== CHEMINS ===============
-        # --------------- TILESET_1 ---------------
-            # Coins Exterieurs
-    28: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[0]}/{ext_int[0]}/EXT-TL.png'),
-    29: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[0]}/{ext_int[0]}/EXT-TR.png'),
-    34: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[0]}/{ext_int[0]}/EXT-BL.png'),
-    35: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[0]}/{ext_int[0]}/EXT-BR.png'),
-            # Coins Interieurs
-    26: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[0]}/{ext_int[1]}/INT-TL.png'),
-    27: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[0]}/{ext_int[1]}/INT-TR.png'),
-    32: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[0]}/{ext_int[1]}/INT-BL.png'),
-    33: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[0]}/{ext_int[1]}/INT-BR.png'),
-            # Chemins Droits
-    24: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[1]}/STRG-L.png'),
-    25: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[1]}/STRG-T.png'),
-    30: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[1]}/STRG-B.png'),
-    31: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[1]}/STRG-R.png'),
-            # Diagonales
-    40: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[2]}/DIAG-TL_BR.png'),
-    41: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Paths/{paths[2]}/DIAG-BL_TR.png'),
-    
-        # --------------- TILESET_2 ---------------
-            # Coins Exterieurs
-    70: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[0]}/{ext_int[0]}/EXT-TL.png'),
-    71: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[0]}/{ext_int[0]}/EXT-TR.png'),
-    76: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[0]}/{ext_int[0]}/EXT-BL.png'),
-    77: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[0]}/{ext_int[0]}/EXT-BR.png'),
-            # Coins Interieurs
-    68: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[0]}/{ext_int[1]}/INT-TL.png'),
-    69: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[0]}/{ext_int[1]}/INT-TR.png'),
-    74: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[0]}/{ext_int[1]}/INT-BL.png'),
-    75: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[0]}/{ext_int[1]}/INT-BR.png'),
-            # Chemins Droits
-    66: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[1]}/STRG-L.png'),
-    67: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[1]}/STRG-T.png'),
-    72: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[1]}/STRG-B.png'),
-    73: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[1]}/STRG-R.png'),
-            # Diagonales
-    82: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[2]}/DIAG-TL_BR.png'),
-    83: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Paths/{paths[2]}/DIAG-BL_TR.png'),
-    
-    
-    # =============== COULEURS UNIES ===============
-        # --------------- TILESET_1 ---------------
-    36: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Colors/COL-PATH.png'),
-    37: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Colors/COL-EXT.png'),
-    38: charger_et_redimensionner_image(f'{chemin}/{tileset[0]}/Colors/COL-INT.png'),
-    
-        # --------------- TILESET_2 ---------------
-    78: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Colors/COL-PATH.png'),
-    79: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Colors/COL-EXT.png'),
-    80: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Colors/COL-INT.png'),
-    84: charger_et_redimensionner_image(f'{chemin}/{tileset[1]}/Colors/COL-GROUND.png'),
 }
-
-
 
 # Chargement de la carte CSV
 def charger_matrice_depuis_csv(chemin_fichier):
@@ -617,7 +531,7 @@ colonnes = len(carte[0])
 largeur_matrice = colonnes * TAILLE_TUILE
 hauteur_matrice = lignes * TAILLE_TUILE
 
-def generer_orcs(nombre_orcs, joueur, vie_orc=100):
+def generer_orcs(nombre_orcs, joueur, vie_orc = 100):
     """Génère des orcs uniquement sur les cases 36 et 38 de la carte."""
     orcs = []
     for _ in range(nombre_orcs):
@@ -691,17 +605,16 @@ def peut_se_deplacer_vers(caractere_tuile):
 def afficher_choix_niveau(fenetre, joueur):
     """ Affiche trois choix d'amélioration lors d'une montée de niveau avec interface graphique """
     choix_possibles = [
-        ("Augmentation de vie", "+50 points de vie", lambda: setattr(joueur, 'vie', joueur.vie + 50)),
-        ("Régénération de vie", "régenère 30HP", lambda: setattr(joueur, 'vie', min(joueur.vie + 30, 200))),
-        ("Dégâts augmentés", "+5 points de dégâts", lambda: setattr(joueur, 'degats', joueur.degats + 5)),
-        ("Or supplémentaire", "+100 pièces d'or", lambda: setattr(joueur, 'gold', joueur.gold + 100)),
-        ("vitesse supplémentaire", "+5  vitesse augmentée ", lambda: setattr(joueur, 'vitesse_deplacement', joueur.vitesse_deplacement + 5)),
-        ("Surprise", "Effet bonus x2 aléatoire", lambda: random.choice([
-            setattr(joueur, 'vie', joueur.vie + 100),
-            setattr(joueur, 'degats', joueur.degats + 10),
-            setattr(joueur, 'gold', joueur.gold + 200)
-        ]))
-    ]
+        ("Augmentation de vie", "+ de points de vie", lambda: setattr(joueur, 'vie', joueur.vie + 20)),
+        ("Régénération de vie", "régénération", lambda: setattr(joueur, 'vie', min(joueur.vie + 20, 200))),
+        ("Dégâts augmentés", "+ de dégâts", lambda: setattr(joueur, 'degats', joueur.degats + 10)),
+        ("Or supplémentaire", "+ 50 pièces d'or", lambda: setattr(joueur, 'gold', joueur.gold + 100)),
+        ("vitesse supplémentaire", "+5  vitesse augmentée ", lambda: setattr(joueur, 'vitesse_deplacement', joueur.vitesse_deplacement + 1)),
+        # ("Surprise", "Effet bonus x2 aléatoire", lambda: random.choice([
+            # setattr(joueur, 'vie', joueur.vie + 100),
+            # setattr(joueur, 'degats', joueur.degats + 10),
+            # setattr(joueur, 'gold', joueur.gold + 200)
+        ]
 
     choix = random.sample(choix_possibles, 3)
 
@@ -773,10 +686,10 @@ def spawn_boss():
 def afficher_menu_achat(fenetre, joueur):
     """ Affiche le menu d'achat pour acheter des bonus """
     choix_bonus = [
-        ("Amélioration de l'épée", "+10 dégâts", 50, lambda: setattr(joueur, 'degats', joueur.degats + 10)),
+        ("Amélioration de l'épée", "+25 dégâts", 50, lambda: setattr(joueur, 'degats', joueur.degats + 10)),
         ("Vitesse d'attaque", "Attaque + rapide", 75, lambda: setattr(joueur, 'vitesse_recup', joueur.vitesse_recup * 0.9)),
         ("Vol de vie", "+10% soin par attaque", 100, lambda: setattr(joueur, 'vol_vie', joueur.vol_vie + 2 )),
-        ("Range d'attaque", "+20% portée", 80, lambda: setattr(joueur, 'distance_attaque', joueur.distance_attaque * 1.2)),
+        ("Range d'attaque", "+20% portée", 80, lambda: setattr(joueur, 'distance_attaque', joueur.distance_attaque * 1.01)),
         ("Dégâts sur la durée", "Brûlure 5s", 120, lambda: setattr(joueur, 'degats_dot',joueur.dot + 5)),
     ]
 
@@ -835,12 +748,12 @@ def lancer_jeu(classe):
     global boss_spawned,boss
     en_cours = True
     horloge = pygame.time.Clock()
-    fenetre = pygame.display.set_mode((LARGEUR_FENETRE, HAUTEUR_FENETRE), pygame.RESIZABLE)
+    fenetre = pygame.display.set_mode((LARGEUR_FENETRE , HAUTEUR_FENETRE), pygame.RESIZABLE)
 
-    pygame.mixer.init()
-    pygame.mixer.music.load("aventure.mp3")
-    pygame.mixer.music.set_volume(0.5)
-    pygame.mixer.music.play(-1)
+    pygame.mixer.music.stop()
+    pygame.mixer.music.load('ambiance.mp3')
+    pygame.mixer.music.set_volume(1.0)
+    pygame.mixer.music.play(-1, 0.0)
 
 
     surface_fondu = pygame.Surface((LARGEUR_FENETRE, HAUTEUR_FENETRE))
@@ -899,7 +812,8 @@ def lancer_jeu(classe):
             joueur.commencer_mouvement("droite", en_course=False)
             deplacement_x = vitesse
 
-        nouvelle_ligne = (joueur.rect.y + deplacement_y + 10) // TAILLE_TUILE
+
+        nouvelle_ligne = (joueur.rect.y + deplacement_y ) // TAILLE_TUILE
         nouvelle_colonne = (joueur.rect.x + deplacement_x) // TAILLE_TUILE
 
         if 0 <= nouvelle_ligne < lignes and peut_se_deplacer_vers(carte[nouvelle_ligne][joueur.rect.x // TAILLE_TUILE]):
@@ -919,8 +833,9 @@ def lancer_jeu(classe):
                 if image:
                     x = index_colonne * TAILLE_TUILE - decalage_camera_x
                     y = index_ligne * TAILLE_TUILE - decalage_camera_y
-                    if 0 <= x < LARGEUR_FENETRE and 0 <= y < HAUTEUR_FENETRE:
+                    if -TAILLE_TUILE <= x < LARGEUR_FENETRE + TAILLE_TUILE and -TAILLE_TUILE <= y < HAUTEUR_FENETRE + TAILLE_TUILE:
                         fenetre.blit(image, (x, y))
+
         joueur.mettre_a_jour()
         fenetre.blit(joueur.image, (position_joueur_x - joueur.rect.width // 2, position_joueur_y - joueur.rect.height // 2))
 
@@ -977,4 +892,4 @@ def lancer_jeu(classe):
     pygame.quit()
 
 if __name__ == "__main__":
-    lancer_jeu("TANK")#changer dirrectement ici avec les différentes classes pour test
+    lancer_jeu("SNIPER")#changer dirrectement ici avec les différentes classes pour test
