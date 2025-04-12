@@ -16,7 +16,7 @@ from classes import Personnage, Ennemi, TankEnnemi, CombattantEnnemi, RangeEnnem
 LARGEUR_FENETRE = 1920
 HAUTEUR_FENETRE = 1080
 TAILLE_TUILE = 80
-ECHELLE_JOUEUR = 2
+ECHELLE_JOUEUR = 1
 VITESSE_MARCHE = 5
 VITESSE_COURSE = 10
 NOIR = (0, 0, 0)
@@ -43,10 +43,10 @@ class Joueur(Personnage, pygame.sprite.Sprite):
 
         # Définition des stats et du dossier des sprites selon la classe
         stats = {
-            "ASSASSIN": {"vie": 100, "distance_attaque": 150, "vitesse_recup": 1.5, "vitesse_deplacement": 8, "degats": 30, "sprite_folder": "sprites/assassin/"},
-            "TANK": {"vie": 280, "distance_attaque": 100, "vitesse_recup": 0.8, "vitesse_deplacement": 6, "degats": 40, "sprite_folder": "sprites/tank/"},
-            "COMBATTANT": {"vie": 150, "distance_attaque":125 , "vitesse_recup": 0.7, "vitesse_deplacement": 7, "degats": 40, "sprite_folder": "sprites/combattant/"},
-            "SNIPER": {"vie": 120, "distance_attaque": 200 , "vitesse_recup": 0.5, "vitesse_deplacement": 6, "degats": 80, "sprite_folder": "sprites/sniper/"}
+            "ASSASSIN": {"vie": 100, "distance_attaque": 150, "vitesse_recup": 1, "vitesse_deplacement": 7, "degats": 25, "sprite_folder": "sprites/assassin/"},
+            "TANK": {"vie": 280, "distance_attaque": 100, "vitesse_recup": 0.8, "vitesse_deplacement": 6, "degats": 50, "sprite_folder": "sprites/tank/"},
+            "COMBATTANT": {"vie": 150, "distance_attaque":125 , "vitesse_recup": 0.7, "vitesse_deplacement": 7, "degats": 75, "sprite_folder": "sprites/combattant/"},
+            "SNIPER": {"vie": 120, "distance_attaque": 200 , "vitesse_recup": 0.5, "vitesse_deplacement": 8, "degats": 100, "sprite_folder": "sprites/sniper/"}
         }
 
         if classe not in stats:
@@ -64,7 +64,7 @@ class Joueur(Personnage, pygame.sprite.Sprite):
         self.niveau = 1
         self.dot = 0
         self.vol_vie = 0
-        self.xp_prochain_niveau = 50
+        self.xp_prochain_niveau = 100
         self.sprite_folder = stats[classe]["sprite_folder"]
         #self.sprite_folder = 'sprites/player/'
 
@@ -88,7 +88,10 @@ class Joueur(Personnage, pygame.sprite.Sprite):
         self.en_attaque = False
         self.type_attaque = None
         self.direction = "bas"
-        self.rect = pygame.Rect(pos_x, pos_y, self.largeur_frame * self.facteur_echelle, self.hauteur_frame * self.facteur_echelle)
+        # On charge la première image tout de suite
+        self.image = self.obtenir_frame(0, "bas", False)
+        self.rect = self.image.get_rect(topleft=(pos_x, pos_y))
+
         self.degats_affiches = []
         self.zone_attaque = None
         self.timer_attaque = 0
@@ -105,7 +108,19 @@ class Joueur(Personnage, pygame.sprite.Sprite):
         self.son_degats.set_volume(0.7)
         self.son_level_up.set_volume(1.0)
 
-
+    def afficher_hitbox(self, surface, decalage_camera_x=0, decalage_camera_y=0):
+        """Affiche la hitbox du joueur en vert."""
+        pygame.draw.rect(
+            surface,
+            (0, 255, 0),  # Couleur verte
+            pygame.Rect(
+                self.rect.x - decalage_camera_x,
+                self.rect.y - decalage_camera_y,
+                self.rect.width,
+                self.rect.height
+            ),
+            2  # Épaisseur de la bordure
+        )
 
     def obtenir_frame(self, frame, direction, en_course, en_attaque=False):
         # Définition des directions pour les animations
@@ -194,7 +209,7 @@ class Joueur(Personnage, pygame.sprite.Sprite):
                     if ennemi.vie <= 0:
                         ennemis.remove(ennemi)
                         self.ajouter_xp(10)
-                        self.gold+10
+
 
 
     def afficher_zone_attaque(self, surface, decalage_camera_x, decalage_camera_y):
@@ -210,8 +225,8 @@ class Joueur(Personnage, pygame.sprite.Sprite):
         self.xp += xp_gagne
         if self.xp >= self.xp_prochain_niveau:
             self.niveau += 1
-            self.xp = self.xp_prochain_niveau
-            self.xp_prochain_niveau += 50
+            self.xp -= self.xp_prochain_niveau
+            self.xp_prochain_niveau *= 2
             self.son_level_up.play()
             print(f"Niveau augmenté ! Niveau actuel : {self.niveau}")
             afficher_choix_niveau(fenetre, self)
@@ -239,9 +254,10 @@ class Joueur(Personnage, pygame.sprite.Sprite):
 
         nouvelle_image = self.obtenir_frame(int(self.sprite_actuel), self.direction, self.en_course, self.en_attaque)
         if nouvelle_image:
+            centre = self.rect.center
             self.image = nouvelle_image
-            self.rect.width = self.image.get_width()
-            self.rect.height = self.image.get_height()
+            self.rect = self.image.get_rect(center=centre)
+
         else:
             self.image = self.obtenir_frame(0, self.direction, False)
 
@@ -259,9 +275,10 @@ class Joueur(Personnage, pygame.sprite.Sprite):
 
         nouvelle_image = self.obtenir_frame(int(self.sprite_actuel), self.direction, self.en_course, self.en_attaque)
         if nouvelle_image:
+            centre = self.rect.center  # Sauvegarde le centre actuel
             self.image = nouvelle_image
-            self.rect.width = self.image.get_width()
-            self.rect.height = self.image.get_height()
+            self.rect = self.image.get_rect(center=centre)  # Recalcule le rect autour de l'image
+
         else:
             self.image = self.obtenir_frame(0, self.direction, False)
 
@@ -276,7 +293,7 @@ class Joueur(Personnage, pygame.sprite.Sprite):
 
 
 class Orc(Ennemi, pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y,):
+    def __init__(self, pos_x, pos_y):
         Ennemi.__init__(self, type_ennemi="Orc", vie=100, degats=1, distance_attaque=1, vitesse_deplacement=VITESSE_MARCHE, x=pos_x, y=pos_y)
         pygame.sprite.Sprite.__init__(self)
         self.spritesheet_course = pygame.image.load('sprites/orc/orc_run.png')
@@ -343,7 +360,6 @@ class Orc(Ennemi, pygame.sprite.Sprite):
 
         if self.rect.colliderect(joueur.rect):
             self.attaquer_joueur(joueur)
-
 
 class BossOrc(Ennemi, pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -531,7 +547,7 @@ colonnes = len(carte[0])
 largeur_matrice = colonnes * TAILLE_TUILE
 hauteur_matrice = lignes * TAILLE_TUILE
 
-def generer_orcs(nombre_orcs, joueur, vie_orc = 100):
+def generer_orcs(nombre_orcs, joueur, vie_orc=100):
     """Génère des orcs uniquement sur les cases 36 et 38 de la carte."""
     orcs = []
     for _ in range(nombre_orcs):
@@ -600,21 +616,22 @@ def afficher_game_over(fenetre):
 
 def peut_se_deplacer_vers(caractere_tuile):
     """ Vérifie si le mouvement est possible """
-    return caractere_tuile == '38' or caractere_tuile.isalpha() or (caractere_tuile.isdigit() and 25 <= int(caractere_tuile) <= 38)
+    return caractere_tuile == '38' or caractere_tuile.isalpha() or (caractere_tuile.isdigit() and 24 <= int(caractere_tuile) <= 38)
 
 def afficher_choix_niveau(fenetre, joueur):
     """ Affiche trois choix d'amélioration lors d'une montée de niveau avec interface graphique """
     choix_possibles = [
-        ("Augmentation de vie", "+ de points de vie", lambda: setattr(joueur, 'vie', joueur.vie + 20)),
-        ("Régénération de vie", "régénération", lambda: setattr(joueur, 'vie', min(joueur.vie + 20, 200))),
-        ("Dégâts augmentés", "+ de dégâts", lambda: setattr(joueur, 'degats', joueur.degats + 10)),
-        ("Or supplémentaire", "+ 50 pièces d'or", lambda: setattr(joueur, 'gold', joueur.gold + 100)),
-        ("vitesse supplémentaire", "+5  vitesse augmentée ", lambda: setattr(joueur, 'vitesse_deplacement', joueur.vitesse_deplacement + 1)),
-        # ("Surprise", "Effet bonus x2 aléatoire", lambda: random.choice([
-            # setattr(joueur, 'vie', joueur.vie + 100),
-            # setattr(joueur, 'degats', joueur.degats + 10),
-            # setattr(joueur, 'gold', joueur.gold + 200)
-        ]
+        ("Augmentation de vie", "+50 points de vie", lambda: setattr(joueur, 'vie', joueur.vie + 50)),
+        ("Régénération de vie", "régenère 30HP", lambda: setattr(joueur, 'vie', min(joueur.vie + 30, 200))),
+        ("Dégâts augmentés", "+5 points de dégâts", lambda: setattr(joueur, 'degats', joueur.degats + 5)),
+        ("Or supplémentaire", "+100 pièces d'or", lambda: setattr(joueur, 'gold', joueur.gold + 100)),
+        ("vitesse supplémentaire", "+5  vitesse augmentée ", lambda: setattr(joueur, 'vitesse_deplacement', joueur.vitesse_deplacement + 5)),
+        ("Surprise", "Effet bonus x2 aléatoire", lambda: random.choice([
+            setattr(joueur, 'vie', joueur.vie + 100),
+            setattr(joueur, 'degats', joueur.degats + 10),
+            setattr(joueur, 'gold', joueur.gold + 200)
+        ]))
+    ]
 
     choix = random.sample(choix_possibles, 3)
 
@@ -686,10 +703,10 @@ def spawn_boss():
 def afficher_menu_achat(fenetre, joueur):
     """ Affiche le menu d'achat pour acheter des bonus """
     choix_bonus = [
-        ("Amélioration de l'épée", "+25 dégâts", 50, lambda: setattr(joueur, 'degats', joueur.degats + 10)),
+        ("Amélioration de l'épée", "+10 dégâts", 50, lambda: setattr(joueur, 'degats', joueur.degats + 10)),
         ("Vitesse d'attaque", "Attaque + rapide", 75, lambda: setattr(joueur, 'vitesse_recup', joueur.vitesse_recup * 0.9)),
         ("Vol de vie", "+10% soin par attaque", 100, lambda: setattr(joueur, 'vol_vie', joueur.vol_vie + 2 )),
-        ("Range d'attaque", "+20% portée", 80, lambda: setattr(joueur, 'distance_attaque', joueur.distance_attaque * 1.01)),
+        ("Range d'attaque", "+20% portée", 80, lambda: setattr(joueur, 'distance_attaque', joueur.distance_attaque * 1.2)),
         ("Dégâts sur la durée", "Brûlure 5s", 120, lambda: setattr(joueur, 'degats_dot',joueur.dot + 5)),
     ]
 
@@ -748,19 +765,19 @@ def lancer_jeu(classe):
     global boss_spawned,boss
     en_cours = True
     horloge = pygame.time.Clock()
-    fenetre = pygame.display.set_mode((LARGEUR_FENETRE , HAUTEUR_FENETRE), pygame.RESIZABLE)
+    fenetre = pygame.display.set_mode((LARGEUR_FENETRE, HAUTEUR_FENETRE), pygame.RESIZABLE)
 
-    pygame.mixer.music.stop()
-    pygame.mixer.music.load('ambiance.mp3')
-    pygame.mixer.music.set_volume(1.0)
-    pygame.mixer.music.play(-1, 0.0)
+    pygame.mixer.init()
+    pygame.mixer.music.load("aventure.mp3")
+    pygame.mixer.music.set_volume(0.5)
+    pygame.mixer.music.play(-1)
 
 
     surface_fondu = pygame.Surface((LARGEUR_FENETRE, HAUTEUR_FENETRE))
     surface_fondu.fill((0, 0, 0))
     alpha_fondu = 255
 
-    joueur = Joueur(classe, largeur_matrice // 2, hauteur_matrice // 2)
+    joueur = Joueur(classe, 150, 150)
 
     list_orcs = generer_orcs(15, joueur)
 
@@ -812,14 +829,30 @@ def lancer_jeu(classe):
             joueur.commencer_mouvement("droite", en_course=False)
             deplacement_x = vitesse
 
+        # Collision sur l'axe X
+        future_rect_x = joueur.rect.move(deplacement_x, 0)
+        if 0 <= future_rect_x.left // TAILLE_TUILE < colonnes and 0 <= future_rect_x.top // TAILLE_TUILE < lignes:
+            cases_x = [
+                carte[future_rect_x.top // TAILLE_TUILE][future_rect_x.left // TAILLE_TUILE],
+                carte[future_rect_x.bottom // TAILLE_TUILE][future_rect_x.left // TAILLE_TUILE],
+                carte[future_rect_x.top // TAILLE_TUILE][future_rect_x.right // TAILLE_TUILE],
+                carte[future_rect_x.bottom // TAILLE_TUILE][future_rect_x.right // TAILLE_TUILE],
+            ]
+            if all(peut_se_deplacer_vers(c) for c in cases_x):
+                joueur.rect.x += deplacement_x
 
-        nouvelle_ligne = (joueur.rect.y + deplacement_y ) // TAILLE_TUILE
-        nouvelle_colonne = (joueur.rect.x + deplacement_x) // TAILLE_TUILE
+        # Collision sur l'axe Y
+        future_rect_y = joueur.rect.move(0, deplacement_y)
+        if 0 <= future_rect_y.left // TAILLE_TUILE < colonnes and 0 <= future_rect_y.top // TAILLE_TUILE < lignes:
+            cases_y = [
+                carte[future_rect_y.top // TAILLE_TUILE][future_rect_y.left // TAILLE_TUILE],
+                carte[future_rect_y.bottom // TAILLE_TUILE][future_rect_y.left // TAILLE_TUILE],
+                carte[future_rect_y.top // TAILLE_TUILE][future_rect_y.right // TAILLE_TUILE],
+                carte[future_rect_y.bottom // TAILLE_TUILE][future_rect_y.right // TAILLE_TUILE],
+            ]
+            if all(peut_se_deplacer_vers(c) for c in cases_y):
+                joueur.rect.y += deplacement_y
 
-        if 0 <= nouvelle_ligne < lignes and peut_se_deplacer_vers(carte[nouvelle_ligne][joueur.rect.x // TAILLE_TUILE]):
-            joueur.rect.y += deplacement_y
-        if 0 <= nouvelle_colonne < colonnes and peut_se_deplacer_vers(carte[joueur.rect.y // TAILLE_TUILE][nouvelle_colonne]):
-            joueur.rect.x += deplacement_x
 
         decalage_camera_x = joueur.rect.x - position_joueur_x + 60
         decalage_camera_y = joueur.rect.y - position_joueur_y +60
@@ -833,11 +866,15 @@ def lancer_jeu(classe):
                 if image:
                     x = index_colonne * TAILLE_TUILE - decalage_camera_x
                     y = index_ligne * TAILLE_TUILE - decalage_camera_y
-                    if -TAILLE_TUILE <= x < LARGEUR_FENETRE + TAILLE_TUILE and -TAILLE_TUILE <= y < HAUTEUR_FENETRE + TAILLE_TUILE:
+                    if 0 <= x < LARGEUR_FENETRE and 0 <= y < HAUTEUR_FENETRE:
                         fenetre.blit(image, (x, y))
-
         joueur.mettre_a_jour()
-        fenetre.blit(joueur.image, (position_joueur_x - joueur.rect.width // 2, position_joueur_y - joueur.rect.height // 2))
+
+        joueur.afficher_hitbox(fenetre, decalage_camera_x, decalage_camera_y)
+
+        fenetre.blit(joueur.image, (joueur.rect.x - decalage_camera_x, joueur.rect.y - decalage_camera_y))
+
+
 
 
         vie_orc = 100
@@ -892,4 +929,4 @@ def lancer_jeu(classe):
     pygame.quit()
 
 if __name__ == "__main__":
-    lancer_jeu("SNIPER")#changer dirrectement ici avec les différentes classes pour test
+    lancer_jeu("TANK") #changer dirrectement ici avec les différentes classes pour test
