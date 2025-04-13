@@ -52,7 +52,7 @@ Nous nous sommes servis de différents outils :
 ## Demo
 
 [demo](https://s6.gifyu.com/images/bpSkj.gif)
-[![bpSkj.gif](https://s6.gifyu.com/images/bpSkj.gif)](https://gifyu.com/image/bpSkj)
+[![bpSkj.gif]](https://gifyu.com/image/bpSkj.gif)
 
 
 ## Auteurs
