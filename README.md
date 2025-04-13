@@ -51,7 +51,7 @@ Nous nous sommes servis de différents outils :
 
 ## Demo
 
-Insert gif or link to demo
+https://gifyu.com/image/bpSkj
 
 
 ## Auteurs
