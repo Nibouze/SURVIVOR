@@ -26,7 +26,7 @@ Une bonne partie du code à été faite par Maxime et Thomas, qui y ont parfois 
 Le côté design des maps, esthétique etc à été géré par Antonin.
 Enfin, les musiques, sfx et principe du shop ont été orchestrées par Eghil.
 
-| Thomas | Eghil | Antonin | Eghil |
+| Thomas | Eghil | Antonin | Maxime |
 | :-------- |  :-------- | :-------- |  :-------- |
 | `Classe Joueur` |  `Animation d'intro` | `Tileset des Cartes` |  `Liaison CSV / Py` |
 | `Menu de Choix` |  `Interface (IHM)` | `fonction lancer_jeu()` |  `Fondu d'entrée` |
