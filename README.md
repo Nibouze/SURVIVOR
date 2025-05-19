@@ -60,3 +60,8 @@ Nous nous sommes servis de différents outils :
 - Maxime RUSSIER-BYELOUSOV
 - Thomas ROBINEAU
 - Antonin TEP
+
+## Serveur Discord où vous pouvez consulter l'avancement du projet
+----------------------------------------
+     https://discord.gg/3Tbv92C5YG
+----------------------------------------
