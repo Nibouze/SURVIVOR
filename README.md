@@ -62,6 +62,4 @@ Nous nous sommes servis de différents outils :
 - Antonin TEP
 
 ## Serveur Discord où vous pouvez consulter l'avancement du projet
-----------------------------------------
-     https://discord.gg/3Tbv92C5YG
-----------------------------------------
+  https://discord.gg/3Tbv92C5YG
